@@ -6,9 +6,9 @@
         {{ $task->status === 'completed' ? 'bg-gray-800/50' : 
             ($task->priority === 'high' ? 'bg-red-900/10' : 
             ($task->priority === 'medium' ? 'bg-yellow-900/10' : 'bg-blue-900/10')) }}">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3 flex-1">
-                <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="flex-shrink-0">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+                <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="flex-shrink-0 pt-1">
                     @csrf
                     @method('PATCH')
                     <button type="submit" 
@@ -24,15 +24,15 @@
                     </button>
                 </form>
                 <div class="min-w-0 flex-1">
-                    <div class="text-white truncate {{ $task->status === 'completed' ? 'line-through text-gray-400' : '' }}">
+                    <div class="text-white break-words {{ $task->status === 'completed' ? 'line-through text-gray-400' : '' }}">
                         {{ $task->title }}
                     </div>
                     @if($task->description)
-                        <p class="text-sm text-gray-400 line-clamp-2">{{ $task->description }}</p>
+                        <p class="text-sm text-gray-400 break-words line-clamp-2 mt-1">{{ $task->description }}</p>
                     @endif
                 </div>
             </div>
-            <div class="flex flex-col items-end gap-2 ml-4">
+            <div class="flex flex-col items-end gap-2 flex-shrink-0">
                 <div class="flex items-center gap-2">
                     @if($task->user_id === auth()->id())
                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
