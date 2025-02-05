@@ -1,4 +1,4 @@
-# 🚀 Task Manager
+# 🚀 CollabTask
 
 A modern, collaborative task management application built with Laravel and Tailwind CSS.
 

@@ -11,7 +11,7 @@
                 <!-- Only show toggle button if user is authorized -->
                 @if((!$task->assigned_to && $task->user_id === auth()->id()) || 
                     ($task->assigned_to && $task->assigned_to === auth()->id()))
-                    <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="flex-shrink-0 pt-1">
+                    <form action="{{ route('tasks.toggle-status', $task) }}" method="POST" class="flex-shrink-0 pt-1">
                         @csrf
                         @method('PATCH')
                         <button type="submit" 
