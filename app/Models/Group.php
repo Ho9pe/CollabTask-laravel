@@ -15,7 +15,12 @@ class Group extends Model
     protected $fillable = [
         'name',
         'description',
-        'user_id'
+        'user_id',
+        'status'
+    ];
+
+    protected $attributes = [
+        'status' => 'active'  // This ensures new groups are 'active' by default
     ];
 
     public function user()

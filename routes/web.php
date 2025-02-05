@@ -28,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('groups.invitations.accept');
     Route::get('/invitations/{invitation}/reject', [GroupInvitationController::class, 'reject'])
         ->name('groups.invitations.reject');
+    Route::patch('/groups/{group}/toggle-status', [GroupController::class, 'toggleStatus'])
+        ->name('groups.toggle-status');
+
 });
 
 require __DIR__.'/auth.php';

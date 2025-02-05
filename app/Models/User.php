@@ -53,14 +53,22 @@ class User extends Authenticatable
         return $this->hasMany(Task::class);
     }
 
-    public function ownedGroups(): HasMany
+    public function groups()
     {
-        return $this->hasMany(Group::class);
+        return $this->hasMany(Group::class, 'user_id')
+            ->orWhereHas('members', function($query) {
+                $query->where('user_id', $this->id);
+            });
     }
 
-    public function groups(): BelongsToMany
+    public function ownedGroups()
     {
-        return $this->belongsToMany(Group::class)->withTimestamps();
+        return $this->hasMany(Group::class, 'user_id');
+    }
+
+    public function memberGroups()
+    {
+        return $this->belongsToMany(Group::class, 'group_members', 'user_id', 'group_id');
     }
 
     public function pendingGroupInvitations()

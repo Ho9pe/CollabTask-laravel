@@ -9,12 +9,33 @@ class GroupController extends Controller
 {
     public function index()
     {
-        $ownedGroups = auth()->user()->ownedGroups()->withCount('tasks')->get();
-        $memberGroups = auth()->user()->groups()->withCount('tasks')->get();
+        $user = auth()->user();
         
-        $groups = $ownedGroups->merge($memberGroups);
-        
-        return view('groups.index', compact('groups'));
+        // Get both owned and member groups
+        $activeGroups = Group::where(function($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->orWhereHas('members', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+        })
+        ->where('status', 'active')
+        ->withCount('tasks')
+        ->get();
+
+        \Log::info('Active Groups:', ['count' => $activeGroups->count()]);
+        \Log::info('First Group Status:', ['status' => $activeGroups->first()?->status]);
+
+        $archivedGroups = Group::where(function($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->orWhereHas('members', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+        })
+        ->where('status', 'completed')
+        ->withCount('tasks')
+        ->get();
+
+        return view('groups.index', compact('activeGroups', 'archivedGroups'));
     }
 
     public function create()
@@ -30,12 +51,14 @@ class GroupController extends Controller
         ]);
 
         $validated['user_id'] = auth()->id();
+        $validated['status'] = 'active';
+        
         $group = Group::create($validated);
 
         // Add debug logging
         \Log::info('Group created:', ['group' => $group->toArray()]);
 
-        return redirect()->route('groups.index')
+        return redirect()->route('groups.show', $group)
             ->with('success', 'Group created successfully.');
     }
 
@@ -87,5 +110,27 @@ class GroupController extends Controller
 
         return redirect()->route('groups.index')
             ->with('success', 'Group deleted successfully.');
+    }
+
+    public function completeAll(Group $group)
+    {
+        if ($group->user_id !== auth()->id()) {
+            abort(403);
+        }
+        $group->tasks()->update(['status' => 'completed']);
+        return redirect()->route('groups.show', $group)
+            ->with('success', 'All tasks in the group have been marked as completed.');
+    }
+
+    public function toggleStatus(Group $group)
+    {
+        if ($group->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $group->status = $group->status === 'active' ? 'completed' : 'active';
+        $group->save();
+
+        return back()->with('success', 'Group status updated successfully.');
     }
 } 

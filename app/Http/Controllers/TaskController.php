@@ -120,16 +120,19 @@ class TaskController extends Controller
 
     public function toggleStatus(Task $task)
     {
-        if ($task->user_id !== auth()->id() && $task->assigned_to !== auth()->id()) {
-            abort(403);
+        // Only allow task completion by the assigned user or self-assigned tasks
+        if ($task->assigned_to && $task->assigned_to !== auth()->id()) {
+            abort(403, 'Only the assigned user can complete this task.');
         }
-        
-        $newStatus = $task->status === 'completed' ? 'pending' : 'completed';
-        $task->update([
-            'status' => $newStatus,
-            'completed_at' => $newStatus === 'completed' ? now() : null
-        ]);
 
-        return redirect()->back()->with('success', 'Task status updated successfully.');
+        // For unassigned tasks, only the creator can complete them
+        if (!$task->assigned_to && $task->user_id !== auth()->id()) {
+            abort(403, 'Only the task creator can complete this task.');
+        }
+
+        $task->status = $task->status === 'completed' ? 'pending' : 'completed';
+        $task->save();
+
+        return back()->with('success', 'Task status updated successfully.');
     }
 } 
